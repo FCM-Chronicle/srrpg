@@ -114,18 +114,53 @@ body {
 }
 
 /* 탐험 모드 */
-.area-description {
-    background-color: rgba(0,0,0,0.5);
-    padding: 2rem;
-    border-radius: 12px;
+.game-canvas-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
     margin-bottom: 2rem;
-    border: 2px solid #4ecdc4;
+    border: 3px solid #4ecdc4;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #0f3460, #1a1a2e);
+    overflow: hidden;
 }
 
-.area-description h3 {
+#gameCanvas, #combatCanvas {
+    display: block;
+    background: transparent;
+}
+
+.area-info-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid #4ecdc4;
+    max-width: 300px;
+}
+
+.area-info-overlay h3 {
     color: #ff6b6b;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.area-info-overlay p {
+    color: #eee;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.combat-canvas-container {
+    display: flex;
+    justify-content: center;
     margin-bottom: 1rem;
+    border: 3px solid #ff6b6b;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #2d1b1b, #1a1a2e);
+    overflow: hidden;
 }
 
 .area-actions {
