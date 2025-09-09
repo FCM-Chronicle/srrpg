@@ -272,4 +272,214 @@ class GameController {
             if (result.perfect) {
                 this.addCombatLog('완벽한 회피! 다음 공격의 데미지가 증가합니다!');
             } else {
-                this.
+                this.addCombatLog('공격을 성공적으로 회피했습니다!');
+            }
+        } else {
+            this.addCombatLog('회피에 실패했습니다!');
+            if (result.enemyAttack) {
+                setTimeout(() => {
+                    this.addCombatLog(`${this.gameLogic.currentEnemy?.name || '적'}이(가) ${result.enemyAttack.damage}의 데미지를 입혔습니다!`);
+                    this.updateUI();
+                    
+                    if (result.enemyAttack.defeat) {
+                        this.handleCombatDefeat();
+                    }
+                }, 1000);
+            }
+        }
+    }
+
+    // 전투에서 도망
+    runFromCombat() {
+        if (this.gameLogic.runFromCombat()) {
+            this.addCombatLog('성공적으로 도망쳤습니다!');
+            setTimeout(() => {
+                this.switchMode('exploration');
+            }, 1000);
+        } else {
+            this.addCombatLog('도망치지 못했습니다!');
+            // 적 공격
+            const enemyResult = this.gameLogic.enemyAttack();
+            if (enemyResult) {
+                setTimeout(() => {
+                    this.addCombatLog(`${this.gameLogic.currentEnemy?.name || '적'}이(가) ${enemyResult.damage}의 데미지를 입혔습니다!`);
+                    this.updateUI();
+                    
+                    if (enemyResult.defeat) {
+                        this.handleCombatDefeat();
+                    }
+                }, 1000);
+            }
+        }
+    }
+
+    // 전투 승리 처리
+    handleCombatVictory(rewards) {
+        this.addCombatLog(`적을 처치했습니다!`);
+        this.addCombatLog(`경험치 ${rewards.exp}를 획득했습니다!`);
+        this.addCombatLog(`골드 ${rewards.gold}를 획득했습니다!`);
+        
+        rewards.items.forEach(itemId => {
+            const item = ITEMS[itemId];
+            this.addCombatLog(`${item.name}을(를) 획득했습니다!`);
+        });
+
+        // 레벨업 체크
+        if (this.gameLogic.checkLevelUp()) {
+            this.showModal('levelUpModal');
+        }
+
+        this.updateUI();
+        
+        setTimeout(() => {
+            this.switchMode('exploration');
+        }, 2000);
+    }
+
+    // 전투 패배 처리
+    handleCombatDefeat() {
+        this.addCombatLog('당신이 쓰러졌습니다...');
+        this.addCombatLog('고요한 쉼터로 돌아갑니다.');
+        
+        // 고요한 쉼터로 이동
+        this.gameLogic.travelTo('shelter');
+        this.gameLogic.rest(); // HP 회복
+        
+        setTimeout(() => {
+            this.switchMode('exploration');
+            this.updateUI();
+            this.updateArea();
+        }, 2000);
+    }
+
+    // 전투 로그 추가
+    addCombatLog(message) {
+        const logElement = document.getElementById('combatLog');
+        const p = document.createElement('p');
+        p.textContent = message;
+        logElement.appendChild(p);
+        logElement.scrollTop = logElement.scrollHeight;
+    }
+
+    // 상점 업데이트
+    updateShop() {
+        const shopContainer = document.getElementById('shopItems');
+        shopContainer.innerHTML = '';
+
+        SHOP_ITEMS.forEach(itemId => {
+            const item = ITEMS[itemId];
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'shop-item';
+            
+            itemDiv.innerHTML = `
+                <h4>${item.name}</h4>
+                <p>${item.description}</p>
+                <p class="price">${item.price} 골드</p>
+                <button onclick="gameController.buyItem('${itemId}')">구매</button>
+            `;
+            
+            shopContainer.appendChild(itemDiv);
+        });
+    }
+
+    // 아이템 구매
+    buyItem(itemId) {
+        if (this.gameLogic.buyItem(itemId)) {
+            this.updateUI();
+            this.showMessage(`${ITEMS[itemId].name}을(를) 구매했습니다!`);
+        } else {
+            this.showMessage('골드가 부족하거나 인벤토리가 가득 찼습니다!');
+        }
+    }
+
+    // 인벤토리 표시
+    showInventory() {
+        this.updateInventory();
+        this.showModal('inventoryModal');
+    }
+
+    // 인벤토리 업데이트
+    updateInventory() {
+        const inventoryGrid = document.getElementById('inventoryGrid');
+        inventoryGrid.innerHTML = '';
+
+        const player = this.gameLogic.getGameState().player;
+        
+        // 20개 슬롯 생성
+        for (let i = 0; i < 20; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'inventory-slot';
+            
+            if (i < player.inventory.length) {
+                const itemId = player.inventory[i];
+                const item = ITEMS[itemId];
+                slot.classList.add('has-item');
+                slot.innerHTML = `<div class="item-name">${item.name}</div>`;
+                slot.addEventListener('click', () => this.handleItemClick(itemId, i));
+            }
+            
+            inventoryGrid.appendChild(slot);
+        }
+    }
+
+    // 아이템 클릭 처리
+    handleItemClick(itemId, index) {
+        const item = ITEMS[itemId];
+        
+        if (item.type === 'consumable') {
+            if (this.gameLogic.useItem(itemId)) {
+                this.updateInventory();
+                this.updateUI();
+                this.showMessage(`${item.name}을(를) 사용했습니다!`);
+            }
+        } else if (['weapon', 'armor', 'shield'].includes(item.type)) {
+            if (this.gameLogic.equipItem(itemId)) {
+                this.updateInventory();
+                this.updateUI();
+                this.showMessage(`${item.name}을(를) 장착했습니다!`);
+            }
+        }
+    }
+
+    // 스탯 표시
+    showStats() {
+        this.showModal('statsModal');
+    }
+
+    // 스탯 증가
+    increaseStat(statName) {
+        if (this.gameLogic.increaseStat(statName)) {
+            this.updateUI();
+            const statNames = {
+                strength: '힘',
+                agility: '민첩',
+                vitality: '체력'
+            };
+            this.showMessage(`${statNames[statName]}이(가) 1 증가했습니다!`);
+        }
+    }
+
+    // 모달 표시
+    showModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    // 모달 숨김
+    hideModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // 메시지 표시 (임시)
+    showMessage(message) {
+        console.log(message);
+        // 실제 구현에서는 UI에 메시지를 표시할 수 있습니다
+    }
+}
+
+// 게임 컨트롤러 인스턴스 생성
+let gameController;
+
+// 페이지 로드 시 게임 시작
+document.addEventListener('DOMContentLoaded', () => {
+    gameController = new GameController();
+});
