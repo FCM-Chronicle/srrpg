@@ -1,4 +1,7 @@
-// 메인 게임 컨트롤러
+case 'travel':
+                if (this.gameLogic.travelTo(action.target)) {
+                    this.updateUI();
+                    this.updateArea();// 메인 게임 컨트롤러
 
 class GameController {
     constructor() {
@@ -349,6 +352,11 @@ class GameController {
             this.switchMode('exploration');
             this.updateUI();
             this.updateArea();
+            
+            // 플레이어 위치 리셋
+            if (this.renderer) {
+                this.renderer.resetPlayerPosition();
+            }
         }, 2000);
     }
 
@@ -469,12 +477,50 @@ class GameController {
         document.getElementById(modalId).classList.add('hidden');
     }
 
-    // 메시지 표시 (임시)
+    // 메시지 표시 (콘솔 + 간단한 알림)
     showMessage(message) {
         console.log(message);
-        // 실제 구현에서는 UI에 메시지를 표시할 수 있습니다
+        
+        // 간단한 알림 표시
+        const alertDiv = document.createElement('div');
+        alertDiv.textContent = message;
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(78, 205, 196, 0.9);
+            color: #16213e;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(alertDiv);
+            }, 300);
+        }, 2000);
     }
 }
+
+// CSS 애니메이션 추가
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 
 // 게임 컨트롤러 인스턴스 생성
 let gameController;
