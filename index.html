@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아레나의 그림자</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <!-- 메인 메뉴 -->
+        <div id="mainMenu" class="screen active">
+            <h1>아레나의 그림자</h1>
+            <p class="subtitle">멸망한 왕국의 투기장에서 살아남아라</p>
+            <button class="btn" onclick="startNewGame()">새로 시작</button>
+            <button class="btn" id="continueBtn" onclick="continueGame()">이어하기</button>
+        </div>
+        
+        <!-- 게임 로비 -->
+        <div id="lobby" class="screen">
+            <h2>투기장 로비</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <strong>레벨:</strong> <span id="playerLevel">1</span>
+                </div>
+                <div class="stat-item">
+                    <strong>경험치:</strong> <span id="playerExp">0</span> / <span id="playerExpMax">100</span>
+                </div>
+                <div class="stat-item">
+                    <strong>골드:</strong> <span id="playerGold">0</span>
+                </div>
+                <div class="stat-item">
+                    <strong>HP:</strong> <span id="playerMaxHp">100</span>
+                </div>
+                <div class="stat-item">
+                    <strong>힘:</strong> <span id="playerStr">10</span>
+                </div>
+                <div class="stat-item">
+                    <strong>민첩:</strong> <span id="playerAgi">10</span>
+                </div>
+            </div>
+            <div class="lobby-buttons">
+                <button class="btn" onclick="showMonsterSelect()">수련 시작</button>
+                <button class="btn" onclick="showEquipment()">장비</button>
+                <button class="btn" onclick="showShop()">상점</button>
+                <button class="btn" onclick="showLevelUp()" id="levelUpBtn" style="display: none;">레벨업!</button>
+            </div>
+        </div>
+        
+        <!-- 마물 선택 -->
+        <div id="monsterSelect" class="screen">
+            <h2>수련할 마물 선택</h2>
+            <div class="monster-list" id="monsterList"></div>
+            <button class="btn" onclick="showLobby()">돌아가기</button>
+        </div>
+        
+        <!-- 전투 -->
+        <div id="combat" class="screen">
+            <h2>전투 중</h2>
+            <div id="combatInfo">
+                <div class="monster-info">
+                    <strong id="monsterName">고블린</strong> (HP: <span id="monsterHp">50</span>/<span id="monsterMaxHp">50</span>)
+                    <div class="hp-bar">
+                        <div class="hp-fill" id="monsterHpBar"></div>
+                    </div>
+                </div>
+                <div class="player-info">
+                    <strong>그림자 검사</strong> (HP: <span id="combatPlayerHp">100</span>/<span id="combatPlayerMaxHp">100</span>)
+                    <div class="hp-bar">
+                        <div class="hp-fill" id="playerHpBar"></div>
+                    </div>
+                </div>
+                <div class="action-gauge">
+                    <div>행동 게이지</div>
+                    <div class="action-bar">
+                        <div class="action-fill" id="playerActionBar"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="combatActions">
+                <button class="btn" id="attackBtn" onclick="playerAttack()">공격</button>
+                <button class="btn" id="defendBtn" onclick="playerDefend()">방어</button>
+                <button class="btn" id="skillBtn" onclick="playerSkill()">그림자 일격</button>
+                <button class="btn" onclick="usePotion()">치유 물약 (<span id="potionCount">0</span>)</button>
+            </div>
+            <div id="combatLog"></div>
+        </div>
+        
+        <!-- 장비 -->
+        <div id="equipment" class="screen">
+            <h2>장비</h2>
+            <div class="equipment-grid">
+                <div class="equipment-slot" id="weaponSlot">
+                    <div><strong>무기</strong></div>
+                    <div id="weaponInfo">없음</div>
+                </div>
+                <div class="equipment-slot" id="armorSlot">
+                    <div><strong>방어구</strong></div>
+                    <div id="armorInfo">없음</div>
+                </div>
+            </div>
+            <div class="inventory-section">
+                <h3>인벤토리</h3>
+                <div id="inventory"></div>
+            </div>
+            <button class="btn" onclick="showLobby()">돌아가기</button>
+        </div>
+        
+        <!-- 상점 -->
+        <div id="shop" class="screen">
+            <h2>상점</h2>
+            <div class="shop-gold">
+                <strong>소지 골드:</strong> <span id="shopGold">0</span>
+            </div>
+            <div id="shopItems"></div>
+            <button class="btn" onclick="showLobby()">돌아가기</button>
+        </div>
+        
+        <!-- 레벨업 -->
+        <div id="levelUp" class="screen">
+            <h2>레벨업!</h2>
+            <p class="levelup-text">스탯 포인트 1점을 배분하세요:</p>
+            <div class="levelup-buttons">
+                <button class="btn" onclick="addStat('str')">힘 +1 (공격력 증가)</button>
+                <button class="btn" onclick="addStat('agi')">민첩 +1 (행동 속도 증가)</button>
+                <button class="btn" onclick="addStat('hp')">체력 +10 (최대 HP 증가)</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
